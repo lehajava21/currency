@@ -34,7 +34,7 @@ public class Provider {
         try {
             num = Double.parseDouble(amount);
         }catch (Exception e){
-            sum = "Wrong amount\n";
+            sum = "Error: Wrong amount\n";
             FileUtils.write(logfile,sum,true);
             return sum;
         }
@@ -42,24 +42,25 @@ public class Provider {
         target = target.toUpperCase();
         String url = baseurl + "latest?symbols=" + target + "," + base + "&base=" + base;
         RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Currency> response = null;
         try {
-            ResponseEntity<Currency> response = restTemplate.getForEntity(url, Currency.class);
-            Currency body = response.getBody();
-            try {
-                Double res = body.getRates().get(target);
-                sum = String.valueOf(num*res);
-            }catch (Exception e){
-                sum = "Wrong currency\n";
-                FileUtils.write(logfile,sum,true);
-            }
-        } catch (Exception e) {
+            response = restTemplate.getForEntity(url, Currency.class);
+        }catch (Exception e) {
             String err = e.toString();
             sum = "Error" + err.substring(err.indexOf(":")) + "\n";
+            FileUtils.write(logfile,sum,true);
+            return sum;
+        }
+        try {
+            Currency body = response.getBody();
+            Double res = body.getRates().get(target);
+            sum = String.valueOf(num*res);
+        }catch (Exception e){
+            sum = "Error: Wrong currency\n";
             FileUtils.write(logfile,sum,true);
         }
         return sum;
     }
-
 }
 
 @Data
